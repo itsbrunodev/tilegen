@@ -1,9 +1,11 @@
 import { parentPort, workerData } from "node:worker_threads";
 import { join } from "node:path";
-import { existsSync, mkdirSync } from "node:fs";
-import sharp from "sharp";
+import sharp, { type SharpOptions } from "sharp";
+import fs from "node:fs/promises";
 
 import type { TileTask } from "@/lib/types";
+
+import { SHARP_CONFIG } from "@/constants/sharp";
 
 interface SharedWorkerData {
 	inputPath: string;
@@ -15,7 +17,6 @@ interface SharedWorkerData {
 	maxMag: number;
 }
 
-// Destructure once
 const {
 	inputPath,
 	outputPathBase,
@@ -26,9 +27,11 @@ const {
 	maxMag,
 } = workerData as SharedWorkerData;
 
-if (!parentPort) process.exit(1);
+const PNG_OPTIONS_LOW = { palette: true, quality: 50, compressionLevel: 9 };
+const PNG_OPTIONS_HIGH = { compressionLevel: 6 };
 
-const emptyTilePromise = sharp({
+const baseImage = sharp(inputPath, SHARP_CONFIG);
+const emptyTileBuffer = await sharp({
 	create: {
 		width: tileSize,
 		height: tileSize,
@@ -39,15 +42,18 @@ const emptyTilePromise = sharp({
 	.png({ compressionLevel: 6 })
 	.toBuffer();
 
-function newCanvas() {
-	return sharp({
-		create: {
-			width: tileSize,
-			height: tileSize,
-			channels: 4,
-			background: { r: 0, g: 0, b: 0, alpha: 0 },
-		},
-	});
+const canvasTemplate: SharpOptions = {
+	create: {
+		width: tileSize,
+		height: tileSize,
+		channels: 4,
+		background: { r: 0, g: 0, b: 0, alpha: 0 },
+	},
+};
+
+if (!parentPort) {
+	console.error("Worker started without a parent port.");
+	process.exit(1);
 }
 
 parentPort.on("message", async (task: TileTask | "done") => {
@@ -58,9 +64,7 @@ parentPort.on("message", async (task: TileTask | "done") => {
 	}
 
 	const { z, x, y } = task;
-	const dir = join(outputPathBase, `${z}`, `${x}`);
-	if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
-	const outputPath = join(dir, `${y}.png`);
+	const outputPath = join(outputPathBase, `${z}`, `${x}`, `${y}.png`);
 
 	try {
 		// coverage in source pixels per tile
@@ -76,40 +80,32 @@ parentPort.on("message", async (task: TileTask | "done") => {
 		const sh = ey - sy;
 
 		if (sw > 0 && sh > 0) {
-			// extract + resize
-			const resized = await sharp(inputPath)
+			const sourceImage = baseImage
+				.clone()
 				.extract({ left: sx, top: sy, width: sw, height: sh })
 				.resize({
 					width: Math.round((sw / coverage) * tileSize),
 					height: Math.round((sh / coverage) * tileSize),
 					fit: sharp.fit.fill,
 					kernel: sharp.kernel.nearest,
-				})
-				.png(
-					// for zooms 0-2, use palette quantization & max compression
-					z <= 2
-						? { palette: true, quality: 50, compressionLevel: 9 }
-						: { compressionLevel: 6 },
-				)
-				.toBuffer();
+				});
 
 			// compute offsets onto canvas
 			const offsetX = Math.round(((sx - x * coverage) / coverage) * tileSize);
 			const offsetY = Math.round(((sy - y * coverage) / coverage) * tileSize);
 
-			await newCanvas()
-				.composite([{ input: resized, left: offsetX, top: offsetY }])
-				.png(
-					// again choose low‑ or high‑quality by zoom
-					z <= 2
-						? { palette: true, quality: 50, compressionLevel: 9 }
-						: { compressionLevel: 6 },
-				)
+			await sharp(canvasTemplate)
+				.composite([
+					{
+						input: await sourceImage.toBuffer(),
+						left: offsetX,
+						top: offsetY,
+					},
+				])
+				.png(z <= 2 ? PNG_OPTIONS_LOW : PNG_OPTIONS_HIGH)
 				.toFile(outputPath);
 		} else {
-			// write the prebuilt empty tile
-			const buf = await emptyTilePromise;
-			await sharp(buf).toFile(outputPath);
+			await fs.writeFile(outputPath, emptyTileBuffer);
 		}
 
 		parentPort!.postMessage("done");

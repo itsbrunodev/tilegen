@@ -9,9 +9,9 @@ import {
 	buildTasks,
 	renderProgressBar,
 	formatDuration,
-} from "../lib/utils";
+} from "@/lib/utils";
 
-import { DEFAULTS } from "../constants/config";
+import { DEFAULTS } from "@/constants/config";
 
 async function main() {
 	const { TILE_SIZE, MAXIMUM_MAGNIFICATION, INPUT_PATH, OUTPUT_DIR } = DEFAULTS;
@@ -22,15 +22,17 @@ async function main() {
 
 	const tileSize = Number(TILE_SIZE);
 
-	// ensure the output directory exists
-	if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
-
 	console.log("Reading image metadata...");
 
 	const { width, height } = await getImageMetadata(inputPath);
 
 	// calculate the maximum zoom level if not provided
-	const maxZoom =calculateMaxZoom(MAXIMUM_MAGNIFICATION, tileSize, width, height);
+	const maxZoom = calculateMaxZoom(
+		MAXIMUM_MAGNIFICATION,
+		tileSize,
+		width,
+		height,
+	);
 
 	console.log(`Computed max zoom level: ${maxZoom}`);
 
@@ -43,8 +45,28 @@ async function main() {
 		DEFAULTS.MAXIMUM_MAGNIFICATION,
 	);
 	const totalTasks = tasks.length;
+
+	const uniqueDirs = new Set<string>();
+
+	for (const task of tasks) {
+		const dir = path.join(outputDir, `${task.z}`, `${task.x}`);
+		uniqueDirs.add(dir);
+	}
+
+	console.log(`Creating ${uniqueDirs.size} output directories...`);
+
+	for (const dir of uniqueDirs) {
+		// only create if it doesn't exist to avoid potential errors on re-runs
+		if (!fs.existsSync(dir)) {
+			fs.mkdirSync(dir, { recursive: true });
+		}
+	}
+
+	console.log("All directories created.");
+
 	let completed = 0;
 	let activeWorkers = 0;
+	let taskIndex = 0;
 
 	// record the start time for tiles per second calculation
 	const startTime = Date.now();
@@ -53,13 +75,17 @@ async function main() {
 
 	// dispatch tasks to a worker
 	function dispatch(worker: Worker) {
-		const next = tasks.shift();
-		worker.postMessage(next ?? "done");
+		// get the next task
+		const next = tasks[taskIndex];
+		if (taskIndex < totalTasks) {
+			taskIndex++; // increment index for the next dispatch
+		}
+		worker.postMessage(next ?? "done"); // send the task or "done" signal
 	}
 
 	// launch a pool of worker threads
 	for (let i = 0; i < cpus().length; i++) {
-		const worker = new Worker(path.join(__dirname, "worker.js"), {
+		const worker = new Worker(path.join(__dirname, "worker.ts"), {
 			workerData: {
 				inputPath,
 				outputPathBase: outputDir,
