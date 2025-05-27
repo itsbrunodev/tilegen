@@ -1,11 +1,14 @@
 import sharp from "sharp";
+
+import { SHARP_CONFIG } from "@/constants/sharp";
+
 import type { TileTask } from "./types";
 
 /**
  * Get the width and height of an image
  */
 export async function getImageMetadata(path: string) {
-	const { width, height } = await sharp(path).metadata();
+	const { width, height } = await sharp(path, SHARP_CONFIG).metadata();
 
 	if (!width || !height) throw new Error("Invalid image dimensions");
 
