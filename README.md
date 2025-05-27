@@ -39,6 +39,10 @@ Tiles will be progressively saved at `./<output-directory>/{z}/{x}/{y}.png`.
 
 *soon*
 
+## 🤔 How it works
+
+I've made a post on [dev.to](https://dev.to/itsbrunodev/breaking-down-tilegen-a-deep-dive-into-image-tiling-4c8) which you can check out to see an in-depth explanation of how this tool works.
+
 ## 📜 License
 
 tilegen is under the [MIT](./LICENSE) license.
