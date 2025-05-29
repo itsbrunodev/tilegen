@@ -111,7 +111,9 @@ async function main() {
 
 				// update progress bar in the terminal
 				process.stdout.write(
-					`\r${renderProgressBar(completed, totalTasks)}, ${Math.round(tps)} tiles/s, eta: ${formatDuration(etaSecs)}`,
+					`\r${renderProgressBar(completed, totalTasks)}, ${Math.round(tps)} tiles/s, elapsed: ${formatDuration(
+						elapsedSecs,
+					)}, eta: ${formatDuration(etaSecs)}`,
 				);
 
 				dispatch(worker); // dispatch next task to the worker
