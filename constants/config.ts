@@ -1,7 +1,7 @@
 export const CONFIG = {
 	/**
 	 * The tile size of each image. (most commonly used in leaflet)
-	 * 
+	 *
 	 * Recommended amount is `256`.
 	 */
 	TILE_SIZE: 256,
