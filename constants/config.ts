@@ -1,6 +1,6 @@
-export const DEFAULTS = {
+export const CONFIG = {
 	/**
-	 * The tile size of each image, used in leaflet
+	 * The tile size of each image. (most commonly used in leaflet)
 	 * 
 	 * Recommended amount is `256`.
 	 */
@@ -20,11 +20,11 @@ export const DEFAULTS = {
 	 */
 	MAXIMUM_MAGNIFICATION: 1,
 	/**
-	 * The high-quality image path which will be used to generate the tiles relative to the root
+	 * The high-quality image path which will be used to generate the tiles relative to the root.
 	 */
 	INPUT_PATH: "./input.png",
 	/**
-	 * The output directory for the tiles relative to the root
+	 * The output directory for the tiles relative to the root.
 	 */
 	OUTPUT_DIR: "./out/",
 } as const;
