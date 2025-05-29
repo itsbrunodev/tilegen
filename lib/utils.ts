@@ -7,7 +7,10 @@ import type { TileTask } from "./types";
 /**
  * Get the width and height of an image
  */
-export async function getImageMetadata(path: string) {
+export async function getImageMetadata(path: string): Promise<{
+	width: number;
+	height: number;
+}> {
 	const { width, height } = await sharp(path, SHARP_CONFIG).metadata();
 
 	if (!width || !height) throw new Error("Invalid image dimensions");
@@ -65,7 +68,7 @@ export function renderProgressBar(
 	const emptyCount = width - filledCount;
 	const percent = Math.floor(ratio * 100);
 
-	// Fill and empty chars
+	// fill and empty chars
 	const fillChar = "█";
 	const emptyChar = "░";
 

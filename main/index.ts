@@ -11,10 +11,10 @@ import {
 	formatDuration,
 } from "@/lib/utils";
 
-import { DEFAULTS } from "@/constants/config";
+import { CONFIG } from "@/constants/config";
 
 async function main() {
-	const { TILE_SIZE, MAXIMUM_MAGNIFICATION, INPUT_PATH, OUTPUT_DIR } = DEFAULTS;
+	const { TILE_SIZE, MAXIMUM_MAGNIFICATION, INPUT_PATH, OUTPUT_DIR } = CONFIG;
 
 	// resolve input and output paths
 	const inputPath = path.resolve(INPUT_PATH);
@@ -42,7 +42,7 @@ async function main() {
 		height,
 		maxZoom,
 		tileSize,
-		DEFAULTS.MAXIMUM_MAGNIFICATION,
+		CONFIG.MAXIMUM_MAGNIFICATION,
 	);
 	const totalTasks = tasks.length;
 
@@ -74,7 +74,7 @@ async function main() {
 	console.log(`Spawning ${cpus().length} workers for ${totalTasks} tiles`);
 
 	// dispatch tasks to a worker
-	function dispatch(worker: Worker) {
+	function dispatch(worker: Worker): void {
 		// get the next task
 		const next = tasks[taskIndex];
 		if (taskIndex < totalTasks) {
@@ -93,7 +93,7 @@ async function main() {
 				imageWidth: width,
 				imageHeight: height,
 				maxZoom,
-				maxMag: DEFAULTS.MAXIMUM_MAGNIFICATION,
+				maxMag: CONFIG.MAXIMUM_MAGNIFICATION,
 			},
 		});
 
