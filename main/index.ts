@@ -1,20 +1,78 @@
-import { cpus } from "node:os";
-import { Worker } from "node:worker_threads";
-import path from "node:path";
 import fs from "node:fs";
+import { cpus } from "node:os";
+import path from "node:path";
+import { Worker } from "node:worker_threads";
+
+import { Command } from "commander";
 
 import {
-	getImageMetadata,
-	calculateMaxZoom,
 	buildTasks,
-	renderProgressBar,
+	calculateMaxZoom,
 	formatDuration,
+	getImageMetadata,
+	renderProgressBar,
 } from "@/lib/utils";
 
 import { CONFIG } from "@/constants/config";
 
+import { version } from "@/package.json" assert { type: "json" };
+
 async function main() {
-	const { TILE_SIZE, MAXIMUM_MAGNIFICATION, INPUT_PATH, OUTPUT_DIR } = CONFIG;
+	const program = new Command();
+
+	const {
+		TILE_SIZE: TILE_SIZE_DEFAULT,
+		MAXIMUM_MAGNIFICATION: MAXIMUM_MAGNIFICATION_DEFAULT,
+		INPUT_PATH: INPUT_PATH_DEFAULT,
+		OUTPUT_DIR: OUTPUT_DIR_DEFAULT,
+	} = CONFIG;
+
+	program
+		.name("tilegen")
+		.description(
+			"A fast, multi-threaded tool to slice large images into map-style tiles at multiple zoom levels.",
+		)
+		.version(version, "-v, --version", "Display the version number.")
+		.option(
+			"-t, --tile-size <TILE_SIZE>",
+			"The tile size of each image.",
+			(value) => Number(value),
+			TILE_SIZE_DEFAULT,
+		)
+		.option(
+			"-m, --max-mag <MAXIMUM_MAGNIFICATION>",
+			"The maximum magnification factor.",
+			(value) => Number(value),
+			MAXIMUM_MAGNIFICATION_DEFAULT,
+		)
+		.option(
+			"-i, --input <INPUT_PATH>",
+			"The path to the input image.",
+			INPUT_PATH_DEFAULT,
+		)
+		.option(
+			"-o, --output <OUTPUT_DIR>",
+			"The path to the output directory where the tiles will be saved.",
+			OUTPUT_DIR_DEFAULT,
+		)
+		.parse();
+
+	const {
+		tileSize: TILE_SIZE,
+		maxMag: MAXIMUM_MAGNIFICATION,
+		input: INPUT_PATH,
+		output: OUTPUT_DIR,
+	} = program.opts<{
+		tileSize: number;
+		maxMag: number;
+		input: string;
+		output: string;
+	}>();
+
+	if (!TILE_SIZE || !MAXIMUM_MAGNIFICATION || !INPUT_PATH || !OUTPUT_DIR) {
+		program.help();
+		process.exit(1);
+	}
 
 	// resolve input and output paths
 	const inputPath = path.resolve(INPUT_PATH);
