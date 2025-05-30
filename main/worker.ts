@@ -1,7 +1,7 @@
-import { parentPort, workerData } from "node:worker_threads";
-import { join } from "node:path";
-import sharp, { type SharpOptions } from "sharp";
 import fs from "node:fs/promises";
+import { join } from "node:path";
+import { parentPort, workerData } from "node:worker_threads";
+import sharp, { type SharpOptions } from "sharp";
 
 import type { TileTask } from "@/lib/types";
 
