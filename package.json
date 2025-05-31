@@ -2,7 +2,7 @@
 	"name": "tilegen",
 	"module": "main/index.ts",
 	"type": "module",
-	"version": "0.4.0",
+	"version": "0.4.1",
 	"scripts": {
 		"start": "bun main/index.ts",
 		"format-and-lint": "biome check .",
