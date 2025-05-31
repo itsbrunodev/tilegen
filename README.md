@@ -24,6 +24,7 @@ tilegen can be used from the command line with the following options:
 | Option | Description | Default |
 | --- | --- | --- |
 | `-t, --tile-size <TILE_SIZE>` | The tile size of each image. | `256` |
+| `-f, --tile-format <TILE_FORMAT>` | The format of the output tiles. | `webp` |
 | `-m, --max-mag <MAXIMUM_MAGNIFICATION>` | The maximum magnification factor. | `1` |
 | `-i, --input <INPUT_PATH>` | The path to the input image. | `./input.png` |
 | `-o, --output <OUTPUT_DIR>` | The path to the output directory where the tiles will be saved. | `./out/` |
@@ -31,10 +32,10 @@ tilegen can be used from the command line with the following options:
 ### Example usage
 
 ```bash
-bun start -t 512 -m 4 -i ./input.png -o ./out/
+bun start -t 512 -f webp -m 4 -i ./input.png -o ./out/
 ```
 
-This will generate tiles at `./out/{z}/{x}/{y}.png`, with a tile size of `512` and a maximum magnification of `4` from the input image `./input.png`.
+This will generate tiles at `./out/{z}/{x}/{y}.webp`, with a tile size of `512` and a maximum magnification of `4` from the input image `./input.png`.
 
 ### What is maximum magnification?
 
