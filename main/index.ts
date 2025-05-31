@@ -134,7 +134,7 @@ async function main() {
 		height,
 		maxZoom,
 		tileSize,
-		CONFIG.MAXIMUM_MAGNIFICATION,
+		MAXIMUM_MAGNIFICATION,
 	);
 	const totalTasks = tasks.length;
 
@@ -190,7 +190,7 @@ async function main() {
 				imageWidth: width,
 				imageHeight: height,
 				maxZoom,
-				maxMag: CONFIG.MAXIMUM_MAGNIFICATION,
+				maxMag: MAXIMUM_MAGNIFICATION,
 			} as SharedWorkerData,
 		});
 
