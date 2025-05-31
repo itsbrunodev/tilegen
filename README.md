@@ -54,4 +54,4 @@ I've made a post on [dev.to](https://dev.to/itsbrunodev/breaking-down-tilegen-a-
 
 ## License
 
-tilegen is under the [MIT](./LICENSE) license.
+tilegen is under the [MIT](./LICENSE.md) license.
