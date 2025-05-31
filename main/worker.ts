@@ -27,7 +27,7 @@ const emptyTileBuffer = await sharp({
 		background: { r: 0, g: 0, b: 0, alpha: 0 },
 	},
 })
-	.toFormat(tileFormat)
+	.toFormat(tileFormat, { compressionLevel: 6 })
 	.toBuffer();
 
 const canvasTemplate: SharpOptions = {
@@ -52,7 +52,7 @@ parentPort.on("message", async (task: TileTask | "done") => {
 	}
 
 	const { z, x, y } = task;
-	const outputPath = join(outputPathBase, `${z}`, `${x}`, `${y}.png`);
+	const outputPath = join(outputPathBase, `${z}`, `${x}`, `${y}.${tileFormat}`);
 
 	try {
 		// coverage in source pixels per tile
@@ -90,7 +90,18 @@ parentPort.on("message", async (task: TileTask | "done") => {
 						top: offsetY,
 					},
 				])
-				.toFormat(tileFormat)
+				.toFormat(
+					tileFormat,
+					z <= 2
+						? {
+								palette: true,
+								quality: 50,
+								compressionLevel: 9,
+							}
+						: {
+								compressionLevel: 6,
+							},
+				)
 				.toFile(outputPath);
 		} else {
 			await fs.writeFile(outputPath, emptyTileBuffer);
