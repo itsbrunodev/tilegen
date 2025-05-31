@@ -3,32 +3,20 @@ import { join } from "node:path";
 import { parentPort, workerData } from "node:worker_threads";
 import sharp, { type SharpOptions } from "sharp";
 
-import type { TileTask } from "@/lib/types";
+import type { SharedWorkerData, TileTask } from "@/lib/types";
 
 import { SHARP_CONFIG } from "@/constants/sharp";
-
-interface SharedWorkerData {
-	inputPath: string;
-	outputPathBase: string;
-	tileSize: number;
-	imageWidth: number;
-	imageHeight: number;
-	maxZoom: number;
-	maxMag: number;
-}
 
 const {
 	inputPath,
 	outputPathBase,
 	tileSize,
+	tileFormat,
 	imageWidth,
 	imageHeight,
 	maxZoom,
 	maxMag,
 } = workerData as SharedWorkerData;
-
-const PNG_OPTIONS_LOW = { palette: true, quality: 50, compressionLevel: 9 };
-const PNG_OPTIONS_HIGH = { compressionLevel: 6 };
 
 const baseImage = sharp(inputPath, SHARP_CONFIG);
 const emptyTileBuffer = await sharp({
@@ -39,7 +27,7 @@ const emptyTileBuffer = await sharp({
 		background: { r: 0, g: 0, b: 0, alpha: 0 },
 	},
 })
-	.png({ compressionLevel: 6 })
+	.toFormat(tileFormat)
 	.toBuffer();
 
 const canvasTemplate: SharpOptions = {
@@ -102,7 +90,7 @@ parentPort.on("message", async (task: TileTask | "done") => {
 						top: offsetY,
 					},
 				])
-				.png(z <= 2 ? PNG_OPTIONS_LOW : PNG_OPTIONS_HIGH)
+				.toFormat(tileFormat)
 				.toFile(outputPath);
 		} else {
 			await fs.writeFile(outputPath, emptyTileBuffer);

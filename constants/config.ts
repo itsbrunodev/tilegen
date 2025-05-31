@@ -6,6 +6,14 @@ export const CONFIG = {
 	 */
 	TILE_SIZE: 256,
 	/**
+	 * The tile format to use.
+	 *
+	 * Accepted formats: `png`, `jpg`, `webp`, `avif`.
+	 *
+	 * Recommended format is `webp`.
+	 */
+	TILE_FORMAT: "webp",
+	/**
 	 * **What this is**:
 	 * - At the deepest zoom level, each tile‑pixel corresponds to
 	 * `MAXIMUM_MAGNIFICATION * MAXIMUM_MAGNIFICATION` original pixels.

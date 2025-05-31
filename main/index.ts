@@ -1,3 +1,4 @@
+import chalk from "chalk";
 import fs from "node:fs";
 import { cpus } from "node:os";
 import path from "node:path";
@@ -12,6 +13,7 @@ import {
 	getImageMetadata,
 	renderProgressBar,
 } from "@/lib/utils";
+import type { SharedWorkerData, TileFormat } from "@/lib/types";
 
 import { CONFIG } from "@/constants/config";
 
@@ -22,6 +24,7 @@ async function main() {
 
 	const {
 		TILE_SIZE: TILE_SIZE_DEFAULT,
+		TILE_FORMAT: TILE_FORMAT_DEFAULT,
 		MAXIMUM_MAGNIFICATION: MAXIMUM_MAGNIFICATION_DEFAULT,
 		INPUT_PATH: INPUT_PATH_DEFAULT,
 		OUTPUT_DIR: OUTPUT_DIR_DEFAULT,
@@ -38,6 +41,23 @@ async function main() {
 			"The tile size of each image.",
 			(value) => Number(value),
 			TILE_SIZE_DEFAULT,
+		)
+		.option<TileFormat>(
+			"-f, --tile-format <TILE_FORMAT>",
+			"The tile format to use.",
+			(value) => {
+				// use the default if the value is invalid
+				switch (value.toLowerCase()) {
+					case "png":
+					case "jpg":
+					case "webp":
+					case "avif":
+						return value as TileFormat;
+					default:
+						return TILE_FORMAT_DEFAULT;
+				}
+			},
+			TILE_FORMAT_DEFAULT,
 		)
 		.option(
 			"-m, --max-mag <MAXIMUM_MAGNIFICATION>",
@@ -59,17 +79,25 @@ async function main() {
 
 	const {
 		tileSize: TILE_SIZE,
+		tileFormat,
 		maxMag: MAXIMUM_MAGNIFICATION,
 		input: INPUT_PATH,
 		output: OUTPUT_DIR,
 	} = program.opts<{
 		tileSize: number;
+		tileFormat: TileFormat;
 		maxMag: number;
 		input: string;
 		output: string;
 	}>();
 
-	if (!TILE_SIZE || !MAXIMUM_MAGNIFICATION || !INPUT_PATH || !OUTPUT_DIR) {
+	if (
+		!TILE_SIZE ||
+		!tileFormat ||
+		!MAXIMUM_MAGNIFICATION ||
+		!INPUT_PATH ||
+		!OUTPUT_DIR
+	) {
 		program.help();
 		process.exit(1);
 	}
@@ -80,7 +108,11 @@ async function main() {
 
 	const tileSize = Number(TILE_SIZE);
 
-	console.log("Reading image metadata...");
+	console.log(
+		`Reading image metadata from ${chalk.bold(
+			path.relative(process.cwd(), inputPath),
+		)}...`,
+	);
 
 	const { width, height } = await getImageMetadata(inputPath);
 
@@ -92,7 +124,9 @@ async function main() {
 		height,
 	);
 
-	console.log(`Computed max zoom level: ${maxZoom}`);
+	console.log(`Tile size: ${chalk.bold(`${tileSize}×${tileSize}`)}`);
+	console.log(`Tile format: ${chalk.bold(tileFormat.toUpperCase())}`);
+	console.log(`Computed max zoom level: ${chalk.bold(`${maxZoom}`)}`);
 
 	// create a list of tasks to generate image tiles
 	const tasks = buildTasks(
@@ -111,8 +145,6 @@ async function main() {
 		uniqueDirs.add(dir);
 	}
 
-	console.log(`Creating ${uniqueDirs.size} output directories...`);
-
 	for (const dir of uniqueDirs) {
 		// only create if it doesn't exist to avoid potential errors on re-runs
 		if (!fs.existsSync(dir)) {
@@ -120,7 +152,9 @@ async function main() {
 		}
 	}
 
-	console.log("All directories created.");
+	console.log(
+		`Created ${chalk.bold(`${uniqueDirs.size}`)} output directories.`,
+	);
 
 	let completed = 0;
 	let activeWorkers = 0;
@@ -129,7 +163,11 @@ async function main() {
 	// record the start time for tiles per second calculation
 	const startTime = Date.now();
 
-	console.log(`Spawning ${cpus().length} workers for ${totalTasks} tiles`);
+	console.log(
+		`Spawning ${chalk.bold(`${cpus().length}`)} workers for ${chalk.bold(
+			`${totalTasks}`,
+		)} tiles.`,
+	);
 
 	// dispatch tasks to a worker
 	function dispatch(worker: Worker): void {
@@ -148,11 +186,12 @@ async function main() {
 				inputPath,
 				outputPathBase: outputDir,
 				tileSize,
+				tileFormat,
 				imageWidth: width,
 				imageHeight: height,
 				maxZoom,
 				maxMag: CONFIG.MAXIMUM_MAGNIFICATION,
-			},
+			} as SharedWorkerData,
 		});
 
 		activeWorkers++;
@@ -169,9 +208,12 @@ async function main() {
 
 				// update progress bar in the terminal
 				process.stdout.write(
-					`\r${renderProgressBar(completed, totalTasks)}, ${Math.round(tps)} tiles/s, elapsed: ${formatDuration(
-						elapsedSecs,
-					)}, eta: ${formatDuration(etaSecs)}`,
+					`\r${renderProgressBar(
+						completed,
+						totalTasks,
+					)}, ${chalk.bold(`${Math.round(tps)}`)} tiles/s, elapsed: ${chalk.bold(
+						formatDuration(elapsedSecs),
+					)}, eta: ${chalk.bold(formatDuration(etaSecs))}`,
 				);
 
 				dispatch(worker); // dispatch next task to the worker
@@ -182,9 +224,11 @@ async function main() {
 					const totalElapsed = (Date.now() - startTime) / 1000;
 
 					process.stdout.write(
-						`\nSuccess! Generated ${totalTasks} tiles in ${formatDuration(
-							totalElapsed,
-						)}.\n`,
+						`\n${chalk.greenBright(
+							`Success! Generated ${chalk.bold(
+								`${totalTasks}`,
+							)} tiles in ${chalk.bold(formatDuration(totalElapsed))}.\n`,
+						)}`,
 					);
 
 					process.exit(0); // exit when all tasks are done
