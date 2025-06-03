@@ -9,6 +9,21 @@ A fast, multi-threaded tool to slice large images into map‑style tiles at mult
 
 ## Installation
 
+### NPM
+
+```bash
+# npm
+npm install tilegen -g
+# yarn
+yarn add tilegen -g
+# pnpm
+pnpm add tilegen -g
+# bun
+bun add tilegen -g
+```
+
+### Source
+
 Before installing, make sure you have [Bun](https://bun.sh/docs/installation) installed on your system.
 
 ```bash
@@ -19,7 +34,17 @@ bun install
 
 ## Usage
 
-tilegen can be used from the command line with the following options:
+### Help
+
+To get help, run the following command:
+
+```bash
+tilegen -h
+```
+
+### CLI
+
+tilegen can be used from the command-line with the following options:
 
 | Option | Description | Default |
 | --- | --- | --- |
@@ -32,7 +57,7 @@ tilegen can be used from the command line with the following options:
 ### Example usage
 
 ```bash
-bun start -t 512 -f webp -m 4 -i ./input.png -o ./out/
+tilegen -t 512 -f webp -m 4 -i ./input.png -o ./out/
 ```
 
 This will generate tiles at `./out/{z}/{x}/{y}.webp`, with a tile size of `512` and a maximum magnification of `4` from the input image `./input.png`.

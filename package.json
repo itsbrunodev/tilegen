@@ -1,16 +1,34 @@
 {
 	"name": "tilegen",
-	"module": "main/index.ts",
+	"description": "🗺️ A fast, multi-threaded tool to slice large images into map-style tiles at multiple zoom levels.",
+	"keywords": ["map", "tile", "leaflet", "multithreading", "tilemap", "bun"],
+	"license": "MIT",
 	"type": "module",
 	"version": "0.4.1",
+	"bin": {
+		"tilegen": "./dist/index.js"
+	},
+	"types": "./dist/index.d.ts",
+	"files": ["dist/*.js", "dist/*.d.ts"],
+	"homepage": "https://github.com/itsbrunodev/tilegen#readme",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/itsbrunodev/tilegen.git"
+	},
+	"bugs": "https://github.com/itsbrunodev/tilegen/issues",
 	"scripts": {
 		"start": "bun main/index.ts",
+		"build": "bun build --target=node ./main/index.ts --outfile=dist/index.js && bun run build:declaration",
+		"build:declaration": "tsc --emitDeclarationOnly --project tsconfig.types.json",
+		"postbuild": "rimraf tsconfig.types.tsbuildinfo",
 		"format-and-lint": "biome check .",
 		"format-and-lint:fix": "biome check . --write"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
-		"@types/bun": "latest"
+		"@types/bun": "latest",
+		"bun-plugin-dts": "^0.3.0",
+		"rimraf": "^6.0.1"
 	},
 	"peerDependencies": {
 		"typescript": "^5"
