@@ -1,15 +1,25 @@
 {
 	"name": "tilegen",
 	"description": "🗺️ A fast, multi-threaded tool to slice large images into map-style tiles at multiple zoom levels.",
-	"keywords": ["map", "tile", "leaflet", "multithreading", "tilemap", "bun"],
+	"keywords": [
+		"map",
+		"tile",
+		"leaflet",
+		"multithreading",
+		"tilemap",
+		"bun"
+	],
 	"license": "MIT",
 	"type": "module",
-	"version": "0.4.1",
+	"version": "0.4.2",
 	"bin": {
 		"tilegen": "./dist/index.js"
 	},
 	"types": "./dist/index.d.ts",
-	"files": ["dist/*.js", "dist/*.d.ts"],
+	"files": [
+		"dist/*.js",
+		"dist/*.d.ts"
+	],
 	"homepage": "https://github.com/itsbrunodev/tilegen#readme",
 	"repository": {
 		"type": "git",
