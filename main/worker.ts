@@ -92,14 +92,15 @@ parentPort.on("message", async (task: TileTask | "done") => {
 				])
 				.toFormat(
 					tileFormat,
-					z <= 2
+					z <= 4
 						? {
 								palette: true,
 								quality: 50,
 								compressionLevel: 9,
 							}
 						: {
-								compressionLevel: 6,
+								compressionLevel: 9,
+								quality: 100,
 							},
 				)
 				.toFile(outputPath);
