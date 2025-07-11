@@ -72,11 +72,15 @@ For example, if `MAXIMUM_MAGNIFICATION` is `4`, at the deepest zoom level, each 
 
 ## Demo
 
-*soon*
+[itsbrunodev/colonycraft](https://github.com/itsbrunodev/colonycraft) is a map based on the ColonyCraft Minecraft server. The image of the map was generated using [mc-mapper](https://github.com/itsbrunodev/mc-mapper).
 
 ## How it works
 
-I've made a post on [dev.to](https://dev.to/itsbrunodev/breaking-down-tilegen-a-deep-dive-into-image-tiling-4c8) which you can check out to see an in-depth explanation of how this tool works.
+- First, the tool reads the input image's dimensions to understand its size.
+- It then automatically calculates the optimal number of zoom levels based on the image's resolution and a configurable `MAXIMUM_MAGNIFICATION` setting.
+- A queue of tasks is created, where each task corresponds to a single tile at a specific zoom level and coordinate.
+- A pool of worker threads then uses all available CPU cores to process these tasks in parallel, rapidly slicing and resizing sections of the source image.
+- Finally, the generated tiles are saved into a standard `z/x/y.png` directory structure, making them ready for use with web viewers (like Leaflet).
 
 ## License
 
