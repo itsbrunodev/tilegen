@@ -1,6 +1,6 @@
 {
 	"name": "tilegen",
-	"description": "🗺️ A fast, multi-threaded tool to slice large images into map-style tiles at multiple zoom levels.",
+	"description": "🗺️ Slice large images into map-style tiles at multiple zoom levels.",
 	"keywords": [
 		"map",
 		"tile",
